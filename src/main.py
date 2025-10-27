@@ -33,14 +33,16 @@ def generate_page(from_path, template_path, dest_path, basepath):
     title = extract_title(file_from_path)
     final_html = file_template_path.replace("{{ Title }}", title)
     final_html_two = final_html.replace("{{ Content }}", html_string_two)
-    final_html_three = final_html_two.replace("href='/", f"href='{basepath}")
-    final_html_four = final_html_three.replace("src='/", f"src='{basepath}")
+    final_html = final_html_two.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace("href='/", f"href='{basepath}")
+    final_html = final_html.replace('src="/', f'src="{basepath}')
+    final_html = final_html.replace("src='/", f"src='{basepath}")
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path,"w") as f:
-        print(f"file created {final_html_four}")
-        new_file = f.write(final_html_four)
+        print(f"file created {final_html}")
+        new_file = f.write(final_html)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, root=None, basepath="/"):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, root=None, basepath=basepath):
     if root is None:
         root = dir_path_content
     for file in os.listdir(dir_path_content):
@@ -68,7 +70,7 @@ def main():
     os.makedirs(public_directory, exist_ok=True)
     static_to_public(static_directory, public_directory)
     generate_pages_recursive("/home/vinic/workspace/portfolio2/content", "/home/vinic/workspace/portfolio2/template.html",
-                             "/home/vinic/workspace/portfolio2/docs", basepath="/")
+                             "/home/vinic/workspace/portfolio2/docs", basepath=basepath)
 
 
 if __name__ == "__main__":
