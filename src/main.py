@@ -2,6 +2,12 @@ from blocks import *
 from textnode import TextNode, TextType
 import os
 import shutil
+import sys
+
+if len(sys.argv) > 1:
+    basepath = sys.argv[1]
+else:
+    basepath = "/"
 
 def static_to_public(static, public):
     if os.path.exists(static):
@@ -15,7 +21,7 @@ def static_to_public(static, public):
                     print(f"directory created - {os.path.join(public, file)}")
                     static_to_public(os.path.join(static, file), os.path.join(public, file))
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r") as f:
         file_from_path = f.read()
@@ -27,12 +33,14 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(file_from_path)
     final_html = file_template_path.replace("{{ Title }}", title)
     final_html_two = final_html.replace("{{ Content }}", html_string_two)
+    final_html_three = final_html_two.replace("href='/", f"href='{basepath}")
+    final_html_four = final_html_three.replace("src='/", f"src='{basepath}")
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path,"w") as f:
-        print(f"file created {final_html_two}")
-        new_file = f.write(final_html_two)
+        print(f"file created {final_html_four}")
+        new_file = f.write(final_html_four)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, root=None):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, root=None, basepath="/"):
     if root is None:
         root = dir_path_content
     for file in os.listdir(dir_path_content):
@@ -45,22 +53,22 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, roo
             print(f"this is new path {new_path}")
             os.makedirs(os.path.dirname(new_path), exist_ok=True)
             print(f"this is template path {template_path}")
-            generate_page(full_path, template_path, new_path)
+            generate_page(full_path, template_path, new_path, basepath)
         elif os.path.isdir(full_path):
-            generate_pages_recursive(full_path, template_path, dest_dir_path, root)
+            generate_pages_recursive(full_path, template_path, dest_dir_path, root, basepath)
 
     
 
 def main():
     static_directory = "/home/vinic/workspace/portfolio2/static"
-    public_directory = "/home/vinic/workspace/portfolio2/public"
+    public_directory = "/home/vinic/workspace/portfolio2/docs"
 
     if os.path.exists(public_directory):
         shutil.rmtree(public_directory)
     os.makedirs(public_directory, exist_ok=True)
     static_to_public(static_directory, public_directory)
     generate_pages_recursive("/home/vinic/workspace/portfolio2/content", "/home/vinic/workspace/portfolio2/template.html",
-                             "/home/vinic/workspace/portfolio2/public")
+                             "/home/vinic/workspace/portfolio2/docs", basepath="/")
 
 
 if __name__ == "__main__":
